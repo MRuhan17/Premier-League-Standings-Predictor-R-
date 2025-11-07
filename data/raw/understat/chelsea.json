@@ -1,0 +1,11 @@
+{
+  "id": "6",
+  "title": "Chelsea",
+  "history": [
+    { "h_team": "Chelsea", "a_team": "Manchester United", "h_goals": 1, "a_goals": 0, "xG": 1.48, "xGA": 0.92, "date": "2024-08-10", "result": "w" },
+    { "h_team": "Liverpool", "a_team": "Chelsea", "h_goals": 2, "a_goals": 2, "xG": 1.95, "xGA": 1.87, "date": "2024-08-17", "result": "d" },
+    { "h_team": "Chelsea", "a_team": "Arsenal", "h_goals": 1, "a_goals": 1, "xG": 1.25, "xGA": 1.44, "date": "2024-08-24", "result": "d" },
+    { "h_team": "Newcastle", "a_team": "Chelsea", "h_goals": 2, "a_goals": 0, "xG": 2.10, "xGA": 0.73, "date": "2024-08-31", "result": "l" },
+    { "h_team": "Chelsea", "a_team": "Tottenham", "h_goals": 3, "a_goals": 2, "xG": 2.45, "xGA": 1.76, "date": "2024-09-07", "result": "w" }
+  ]
+}
