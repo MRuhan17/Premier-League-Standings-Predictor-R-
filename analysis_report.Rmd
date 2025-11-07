@@ -1,0 +1,175 @@
+---
+title: "🏆 Premier League Standings Predictor (R)"
+author: "Ruhulalemeen Mulla"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    theme: flatly
+    toc: true
+    toc_depth: 2
+    toc_float: true
+  github_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE
+)
+library(tidyverse)
+library(data.table)
+library(ggplot2)
+library(xgboost)
+library(randomForest)
+library(scales)
+library(lubridate)
+
+⚙️ 1. Project Overview
+
+This notebook demonstrates the full machine-learning pipeline behind the Premier League Standings Predictor.
+We’ll go from data fetching → feature engineering → simulation → model training → prediction → visualization.
+
+🧩 2. Load Engineered Data
+Writing
+
+df <- fread("data/combined_features.csv")
+head(df)
+
+Each row represents a team’s seasonal performance, including:
+
+Goals for / against
+
+Expected goals (xG / xGA)
+
+Wins, draws, losses
+
+Derived features like goal difference
+
+🧠 3. Train ML Models (Random Forest + XGBoost)
+Writing
+
+target <- df$points
+features <- df %>%
+select(avg_xG, avg_xGA, goals_for, goals_against, goal_diff, wins, draws, losses)
+train_matrix <- as.matrix(features)
+
+Random Forest
+
+rf_model <- randomForest(
+x = train_matrix, y = target,
+ntree = 500, mtry = 4, importance = TRUE
+)
+
+XGBoost
+
+xgb_data <- xgb.DMatrix(data = train_matrix, label = target)
+xgb_model <- xgb.train(
+params = list(objective = "reg", eval_metric = "rmse", max_depth = 4, eta = 0.1),
+data = xgb_data, nrounds = 200, verbose = 0
+)
+
+Predictions
+
+rf_preds <- predict(rf_model, newdata = train_matrix)
+xgb_preds <- predict(xgb_model, newdata = xgb_data)
+ensemble_preds <- (rf_preds + xgb_preds) / 2
+
+df_preds <- df %>%
+mutate(pred_points = round(ensemble_preds, 2)) %>%
+arrange(desc(pred_points)) %>%
+mutate(predicted_rank = row_number())
+
+head(df_preds, 10)
+
+📊 4. Predicted Standings
+Writing
+
+ggplot(df_preds, aes(x = reorder(team, pred_points), y = pred_points, fill = pred_points)) +
+geom_col() +
+coord_flip() +
+scale_fill_gradient(low = "darkred", high = "darkgreen") +
+labs(
+title = "Predicted Premier League Standings",
+x = "Team",
+y = "Predicted Points"
+) +
+theme_minimal()
+
+🎲 5. Monte Carlo Simulation (Season Probabilities)
+Writing
+
+team_probs <- fread("outputs/team_probabilities.csv")
+head(team_probs, 10)
+
+Metric	Meaning
+title_prob	Probability of finishing 1st
+top4_prob	Probability of finishing in Top 4
+relegation_prob	Probability of relegation
+avg_rank	Expected average rank
+Writing
+
+ggplot(team_probs, aes(x = reorder(team, -title_prob), y = title_prob)) +
+geom_col(fill = "goldenrod") +
+coord_flip() +
+labs(title = "🏆 Title Probabilities", x = "Team", y = "Probability") +
+scale_y_continuous(labels = percent) +
+theme_minimal()
+
+🧾 6. Model Summary
+Writing
+
+model_summary <- fread("models/model_summary.csv")
+knitr::kable(model_summary, caption = "Model Performance Summary")
+
+⚽ 7. Predictions Table
+Writing
+
+preds <- fread("outputs/predictions.csv")
+knitr::kable(
+preds %>% select(predicted_rank, team, ensemble_pred_points),
+caption = "Final Predicted Premier League Standings"
+)
+
+🧭 8. Conclusions
+
+This model combines:
+
+Real football data (football-data.co.uk + Understat)
+
+Machine learning (Random Forest + XGBoost ensemble)
+
+Monte Carlo simulations for probabilistic outcomes
+
+While no model can perfectly predict football’s chaos, these tools help visualize expected outcomes and uncertainty.
+
+Writing
+
+sessionInfo()
+
+
+---
+
+### 🧩 To render this notebook
+
+From your project root:
+```bash
+R -e "rmarkdown::render('example_notebook.Rmd', output_format = 'html_document')"
+
+
+You’ll get an HTML report like:
+
+example_notebook.html
+
+
+GitHub will also render it automatically if you open the .Rmd or the knitted .md file in your repo.
+
+🧠 Optional enhancements
+
+If you want, you can:
+
+Add this command to your CI workflow to auto-render the notebook after every build.
+
+Or run it inside your Docker container:
+
+docker run --rm -v $(pwd):/app pl-predictor R -e "rmarkdown::render('example_notebook.Rmd')"
