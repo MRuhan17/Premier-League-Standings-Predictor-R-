@@ -1,0 +1,11 @@
+{
+  "id": "17",
+  "title": "Southampton",
+  "history": [
+    { "h_team": "Southampton", "a_team": "Ipswich", "h_goals": 1, "a_goals": 2, "xG": 1.22, "xGA": 1.91, "date": "2024-08-10", "result": "l" },
+    { "h_team": "Southampton", "a_team": "Wolves", "h_goals": 1, "a_goals": 1, "xG": 1.35, "xGA": 1.41, "date": "2024-08-17", "result": "d" },
+    { "h_team": "Brentford", "a_team": "Southampton", "h_goals": 2, "a_goals": 0, "xG": 1.79, "xGA": 0.95, "date": "2024-08-24", "result": "l" },
+    { "h_team": "Southampton", "a_team": "Leicester", "h_goals": 2, "a_goals": 1, "xG": 1.88, "xGA": 1.32, "date": "2024-08-31", "result": "w" },
+    { "h_team": "Manchester United", "a_team": "Southampton", "h_goals": 3, "a_goals": 0, "xG": 2.33, "xGA": 0.84, "date": "2024-09-07", "result": "l" }
+  ]
+}
