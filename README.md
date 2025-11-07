@@ -114,7 +114,7 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 Ruhulalemeen Mulla
 Data Science & Sports Analytics Enthusiast
 📧 [ruhanmulla07@gmail.com](mailto:ruhanmulla07@gmail.com)
-🔗 [www.linkedin.com/in/ruhulalemeen-mulla](www.linkedin.com/in/ruhulalemeen-mulla) · [[GitHub](https://github.com/MRuhan17)]([https://github.com/yourusername](https://github.com/MRuhan17))
+🔗 [www.linkedin.com/in/ruhulalemeen-mulla](www.linkedin.com/in/ruhulalemeen-mulla) ·
 
 ---
 
