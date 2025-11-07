@@ -1,0 +1,42 @@
+# ==========================================
+# 01_fetch_football_data_2425.R
+# ==========================================
+# Purpose: Download only the 2024–25 Premier League (E0)
+#          dataset from football-data.co.uk.
+#          The file will be saved as data/raw/E0_2425.csv.
+# ==========================================
+
+# Define the season code for Premier League 2024–25
+# football-data.co.uk uses the format: mmz4281/<code>/E0.csv
+# where E0 = Premier League, and "2425" corresponds to 2024–25 season.
+season_code <- "2425"
+
+# Build the download URL
+url <- sprintf("https://www.football-data.co.uk/mmz4281/%s/E0.csv", season_code)
+
+# Define where to save it
+out_dir <- "data/raw"
+dest_file <- file.path(out_dir, paste0("E0_", season_code, ".csv"))
+
+# Create the raw data folder if it doesn’t exist
+dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+
+# Download the CSV file
+tryCatch({
+  download.file(url, destfile = dest_file, mode = "wb")
+  message("✅ Downloaded Premier League 2024–25 data:")
+  message("📁 Saved to: ", dest_file)
+}, error = function(e) {
+  message("⚠️ Failed to download: ", url)
+  message("Error details: ", e$message)
+})
+
+# Optional sanity check
+if (file.exists(dest_file)) {
+  df <- read.csv(dest_file)
+  message("✅ File verified. Rows: ", nrow(df), " | Columns: ", ncol(df))
+  message("Preview:")
+  print(head(df))
+} else {
+  message("❌ File not found. Check URL or season code.")
+}
