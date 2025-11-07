@@ -1,0 +1,11 @@
+{
+  "id": "9",
+  "title": "Fulham",
+  "history": [
+    { "h_team": "Fulham", "a_team": "Nottingham Forest", "h_goals": 2, "a_goals": 0, "xG": 2.01, "xGA": 0.89, "date": "2024-08-10", "result": "w" },
+    { "h_team": "Manchester City", "a_team": "Fulham", "h_goals": 3, "a_goals": 1, "xG": 2.68, "xGA": 1.14, "date": "2024-08-17", "result": "l" },
+    { "h_team": "Fulham", "a_team": "Ipswich", "h_goals": 1, "a_goals": 1, "xG": 1.23, "xGA": 1.02, "date": "2024-08-24", "result": "d" },
+    { "h_team": "Fulham", "a_team": "Chelsea", "h_goals": 0, "a_goals": 2, "xG": 0.74, "xGA": 1.88, "date": "2024-08-31", "result": "l" },
+    { "h_team": "Crystal Palace", "a_team": "Fulham", "h_goals": 2, "a_goals": 0, "xG": 1.96, "xGA": 0.63, "date": "2024-09-07", "result": "l" }
+  ]
+}
