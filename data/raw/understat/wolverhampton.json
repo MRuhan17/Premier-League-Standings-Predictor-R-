@@ -1,0 +1,11 @@
+{
+  "id": "20",
+  "title": "Wolves",
+  "history": [
+    { "h_team": "Wolves", "a_team": "Leicester", "h_goals": 1, "a_goals": 3, "xG": 1.15, "xGA": 2.45, "date": "2024-08-10", "result": "l" },
+    { "h_team": "Everton", "a_team": "Wolves", "h_goals": 1, "a_goals": 0, "xG": 1.29, "xGA": 0.77, "date": "2024-08-17", "result": "l" },
+    { "h_team": "Wolves", "a_team": "Southampton", "h_goals": 1, "a_goals": 1, "xG": 1.35, "xGA": 1.41, "date": "2024-08-24", "result": "d" },
+    { "h_team": "Nottingham Forest", "a_team": "Wolves", "h_goals": 1, "a_goals": 1, "xG": 1.11, "xGA": 1.34, "date": "2024-08-31", "result": "d" },
+    { "h_team": "Manchester United", "a_team": "Wolves", "h_goals": 3, "a_goals": 0, "xG": 2.43, "xGA": 0.95, "date": "2024-09-07", "result": "l" }
+  ]
+}
