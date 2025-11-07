@@ -1,0 +1,155 @@
+# ==========================================
+# 03_simulation.R
+# ==========================================
+# Simulates Premier League seasons using Poisson-based attack/defense model
+# Produces:
+#   outputs/standings_simulation.csv
+#   outputs/team_probabilities.csv
+# ==========================================
+
+library(dplyr)
+library(tidyr)
+library(data.table)
+library(lubridate)
+library(purrr)
+
+set.seed(42)
+
+# -------------------------
+# 1️⃣ Load feature data
+# -------------------------
+input_file <- "data/combined_features.csv"
+if (!file.exists(input_file))
+  stop("❌ combined_features.csv not found! Run 01_feature_engineering.R first.")
+
+teams_df <- fread(input_file) %>%
+  mutate(team = trimws(team))
+
+if (!all(c("avg_xG", "avg_xGA") %in% names(teams_df)))
+  stop("❌ Missing xG columns — run 01_feature_engineering.R again with Understat data.")
+
+teams <- teams_df$team
+n_teams <- length(teams)
+
+# -------------------------
+# 2️⃣ Calculate team strengths
+# -------------------------
+mean_xg <- mean(teams_df$avg_xG, na.rm = TRUE)
+mean_xga <- mean(teams_df$avg_xGA, na.rm = TRUE)
+
+teams_df <- teams_df %>%
+  mutate(
+    attack_strength = avg_xG / mean_xg,
+    defense_strength = mean_xga / avg_xGA
+  ) %>%
+  mutate(
+    attack_strength = ifelse(is.na(attack_strength), 1, attack_strength),
+    defense_strength = ifelse(is.na(defense_strength), 1, defense_strength)
+  )
+
+# -------------------------
+# 3️⃣ Simulate a single match
+# -------------------------
+simulate_match <- function(home, away, data, home_adv = 1.15) {
+  h <- filter(data, team == home)
+  a <- filter(data, team == away)
+
+  lambda_home <- home_adv * h$attack_strength * a$defense_strength * mean_xg
+  lambda_away <- a$attack_strength * h$defense_strength * mean_xg
+
+  hg <- rpois(1, lambda_home)
+  ag <- rpois(1, lambda_away)
+
+  tibble(
+    home_team = home,
+    away_team = away,
+    home_goals = hg,
+    away_goals = ag,
+    home_points = ifelse(hg > ag, 3, ifelse(hg == ag, 1, 0)),
+    away_points = ifelse(ag > hg, 3, ifelse(ag == hg, 1, 0))
+  )
+}
+
+# -------------------------
+# 4️⃣ Simulate a full season
+# -------------------------
+simulate_season <- function(data) {
+  fixtures <- expand.grid(home_team = data$team, away_team = data$team) %>%
+    filter(home_team != away_team)
+
+  results <- pmap_dfr(
+    list(fixtures$home_team, fixtures$away_team),
+    simulate_match,
+    data = data
+  )
+
+  standings <- results %>%
+    pivot_longer(cols = c(home_points, away_points), names_to = "side", values_to = "points") %>%
+    mutate(team = ifelse(side == "home_points", home_team, away_team)) %>%
+    group_by(team) %>%
+    summarise(
+      total_points = sum(points),
+      goals_scored = sum(ifelse(side == "home_points", home_goals, away_goals)),
+      goals_against = sum(ifelse(side == "home_points", away_goals, home_goals)),
+      goal_diff = goals_scored - goals_against,
+      .groups = "drop"
+    ) %>%
+    arrange(desc(total_points), desc(goal_diff), desc(goals_scored)) %>%
+    mutate(rank = row_number())
+
+  standings
+}
+
+# -------------------------
+# 5️⃣ Monte Carlo simulations
+# -------------------------
+n_sims <- 10000
+message("🎲 Simulating ", n_sims, " full seasons...")
+
+sim_list <- vector("list", n_sims)
+pb <- txtProgressBar(min = 0, max = n_sims, style = 3)
+
+for (i in seq_len(n_sims)) {
+  sim_list[[i]] <- simulate_season(teams_df) %>% mutate(sim_id = i)
+  setTxtProgressBar(pb, i)
+}
+close(pb)
+message("\n✅ All simulations complete.")
+
+sim_data <- bind_rows(sim_list)
+
+# -------------------------
+# 6️⃣ Save raw simulation data
+# -------------------------
+dir.create("outputs", showWarnings = FALSE)
+fwrite(sim_data, "outputs/standings_simulation.csv")
+message("💾 Saved -> outputs/standings_simulation.csv")
+
+# -------------------------
+# 7️⃣ Aggregate probabilities
+# -------------------------
+prob_table <- sim_data %>%
+  group_by(team, rank) %>%
+  summarise(freq = n(), .groups = "drop") %>%
+  group_by(team) %>%
+  mutate(prob = freq / sum(freq))
+
+team_probs <- prob_table %>%
+  summarise(
+    title_prob = sum(prob[rank == 1]),
+    top4_prob = sum(prob[rank <= 4]),
+    relegation_prob = sum(prob[rank >= 18]),
+    avg_rank = sum(rank * prob),
+    .groups = "drop"
+  ) %>%
+  arrange(avg_rank)
+
+fwrite(team_probs, "outputs/team_probabilities.csv")
+message("💾 Saved -> outputs/team_probabilities.csv")
+
+# -------------------------
+# 8️⃣ Quick summary
+# -------------------------
+message("\n🏆 Sample of Simulation Results:")
+print(head(team_probs, 8))
+message("⚽  Simulation data stored in outputs/standings_simulation.csv")
