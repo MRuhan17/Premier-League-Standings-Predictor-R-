@@ -1,0 +1,8 @@
+{
+  "id": "1",
+  "title": "Arsenal",
+  "history": [
+    { "h_team": "Arsenal", "a_team": "Liverpool", "h_goals": 3, "a_goals": 1, "xG": 2.45, "xGA": 1.10, "date": "2024-08-17", "result": "w" },
+    { "h_team": "Brighton", "a_team": "Arsenal", "h_goals": 0, "a_goals": 2, "xG": 0.85, "xGA": 1.75, "date": "2024-08-24", "result": "w" }
+  ]
+}
