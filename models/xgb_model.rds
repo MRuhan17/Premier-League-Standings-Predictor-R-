@@ -1,1 +1,72 @@
+# ==========================================
+# train_xgb_model.R
+# ==========================================
+# Trains an XGBoost regression model on
+# Premier League engineered feature data
+# and saves it to models/xgb_model.rds
+# ==========================================
+
+library(tidyverse)
+library(data.table)
+library(xgboost)
+
+set.seed(42)
+
+# -------------------------
+# 1️⃣ Load engineered dataset
+# -------------------------
+input_file <- "data/combined_features.csv"
+if (!file.exists(input_file))
+  stop("❌ combined_features.csv not found! Run 01_feature_engineering.R first.")
+
+df <- fread(input_file)
+df <- df %>%
+  mutate(across(where(is.numeric), ~ ifelse(is.na(.x), 0, .x)))
+
+# Prepare training data
+target <- df$points
+features <- df %>%
+  select(avg_xG, avg_xGA, goals_for, goals_against,
+         goal_diff, wins, draws, losses)
+train_matrix <- as.matrix(features)
+
+# -------------------------
+# 2️⃣ Train XGBoost model
+# -------------------------
+xgb_data <- xgb.DMatrix(data = train_matrix, label = target)
+
+params <- list(
+  objective = "reg:squarederror",
+  eval_metric = "rmse",
+  max_depth = 4,
+  eta = 0.1,
+  subsample = 0.8,
+  colsample_bytree = 0.8
+)
+
+message("⚡ Training XGBoost model...")
+
+xgb_model <- xgb.train(
+  params = params,
+  data = xgb_data,
+  nrounds = 250,
+  verbose = 0
+)
+
+message("✅ XGBoost training complete!")
+
+# -------------------------
+# 3️⃣ Evaluate and show feature importance
+# -------------------------
+importance_matrix <- xgb.importance(model = xgb_model)
+message("🏅 Top features by importance:")
+print(head(importance_matrix, 5))
+
+# -------------------------
+# 4️⃣ Save trained model
+# -------------------------
+dir.create("models", showWarnings = FALSE)
+saveRDS(xgb_model, "models/xgb_model.rds")
+
+message("💾 Saved model -> models/xgb_model.rds")
 
