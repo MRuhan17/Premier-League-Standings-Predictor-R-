@@ -1,0 +1,82 @@
+# ==========================================
+# 06_generate_predictions.R
+# ==========================================
+# Uses saved RF + XGB models to predict Premier League standings.
+# Produces final outputs/predictions.csv
+# ==========================================
+
+library(tidyverse)
+library(data.table)
+library(randomForest)
+library(xgboost)
+
+set.seed(42)
+
+# -------------------------
+# 1️⃣ Load models and data
+# -------------------------
+rf_path <- "models/rf_model.rds"
+xgb_path <- "models/xgb_model.rds"
+data_path <- "data/combined_features.csv"
+
+if (!file.exists(rf_path) | !file.exists(xgb_path)) {
+  stop("❌ Trained models not found. Run 04_predict_and_report.R first.")
+}
+if (!file.exists(data_path)) {
+  stop("❌ combined_features.csv not found. Run 01_feature_engineering.R first.")
+}
+
+rf_model <- readRDS(rf_path)
+xgb_model <- readRDS(xgb_path)
+df <- fread(data_path)
+
+df <- df %>%
+  mutate(across(where(is.numeric), ~ ifelse(is.na(.x), 0, .x)))
+
+target <- df$points
+features <- df %>%
+  select(avg_xG, avg_xGA, goals_for, goals_against,
+         goal_diff, wins, draws, losses)
+train_matrix <- as.matrix(features)
+
+# -------------------------
+# 2️⃣ Make predictions
+# -------------------------
+rf_preds <- predict(rf_model, newdata = train_matrix)
+xgb_preds <- predict(xgb_model, newdata = xgb.DMatrix(train_matrix))
+
+ensemble_preds <- (rf_preds + xgb_preds) / 2
+
+pred_df <- df %>%
+  mutate(
+    rf_pred_points = round(rf_preds, 2),
+    xgb_pred_points = round(xgb_preds, 2),
+    ensemble_pred_points = round(ensemble_preds, 2)
+  ) %>%
+  arrange(desc(ensemble_pred_points)) %>%
+  mutate(predicted_rank = row_number())
+
+# -------------------------
+# 3️⃣ Save final predictions
+# -------------------------
+dir.create("outputs", showWarnings = FALSE)
+fwrite(pred_df, "outputs/predictions.csv")
+
+message("💾 Saved final predictions -> outputs/predictions.csv")
+
+# -------------------------
+# 4️⃣ Print nice table
+# -------------------------
+message("🏆 Predicted Top 6 Standings:")
+print(
+  pred_df %>%
+    select(predicted_rank, team, ensemble_pred_points) %>%
+    head(6)
+)
+
+message("⚠️ Predicted Relegation Zone:")
+print(
+  pred_df %>%
+    select(predicted_rank, team, ensemble_pred_points) %>%
+    tail(3)
+)
