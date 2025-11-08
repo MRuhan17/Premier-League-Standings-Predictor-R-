@@ -1,120 +1,102 @@
 # 🏆 Premier League Standings Predictor (R)
 
-Machine learning meets football analytics — this R project predicts **Premier League final standings** using **real match data**, **expected goals (xG)** statistics, and **Monte Carlo simulations**.
+**A simple, streamlined R script that predicts Premier League final standings using machine learning.**
 
-It trains advanced models (XGBoost, Random Forest) on historical data from [football-data.co.uk](https://www.football-data.co.uk/) and [Understat](https://understat.com/), then simulates the current season thousands of times to estimate each club’s probability of finishing positions (Top 4, relegation, etc.).
+## 🎯 What It Does
 
----
+This project uses a **Random Forest** model to predict how Premier League teams will finish the season. The script:
+- Generates sample historical data for 20 Premier League teams
+- Trains a machine learning model on team statistics
+- Predicts final standings with point totals and probabilities
+- Outputs predictions to a CSV file
 
-## 🚀 Features
+## 🚀 Quick Start
 
-* 📊 **Real Premier League data** — automatically fetched from open football datasets
-* ⚙️ **Feature engineering** — goals for/against, xG, home/away form, goal difference, etc.
-* 🧠 **Machine learning models** — XGBoost + Random Forest ensemble to predict season points
-* 🎲 **Monte Carlo simulations** — generates probabilistic standings for all 20 teams
-* 📦 **Fully modular pipeline** — reproducible data → model → output workflow
-* 🐳 **Docker & CI ready** — portable builds with GitHub Actions integration
+### Prerequisites
+- R (version 4.0 or higher)
+- RStudio (optional but recommended)
 
----
+### Installation & Usage
 
-## 📁 Project Structure
-
-```
-pl-standings-predictor-R/
-├── README.md
-├── LICENSE
-├── data-raw/                  # Data fetching scripts (football-data, Understat)
-├── data/                      # Raw and processed datasets
-├── R/                         # Core R scripts (feature engineering, models, simulation)
-├── models/                    # Saved ML models (.rds)
-├── outputs/                   # Predictions, simulation results
-├── docker/                    # Dockerfile for reproducible builds
-├── .github/workflows/         # CI pipeline
-└── example_notebook.Rmd       # End-to-end reproducible notebook
-```
-
----
-
-## 🧩 Installation
-
-### Option 1: Run locally
-
+1. **Clone the repository:**
 ```bash
-git clone https://github.com/<your-username>/pl-standings-predictor-R.git
-cd pl-standings-predictor-R
-Rscript data-raw/01_fetch_football_data.R
-Rscript R/00_setup.R
-Rscript R/01_feature_engineering.R
-Rscript R/02_models.R
-Rscript R/04_predict_and_report.R
+git clone https://github.com/MRuhan17/Premier-League-Standings-Predictor-R-.git
+cd Premier-League-Standings-Predictor-R-
 ```
 
-### Option 2: Run with Docker
-
-```bash
-docker build -t pl-predictor .
-docker run --rm -v $(pwd)/outputs:/app/outputs pl-predictor
+2. **Run the prediction script:**
+```r
+Rscript predict_standings.R
 ```
 
----
-
-## 🧠 Models
-
-| Model             | Description                                         | Package        |
-| ----------------- | --------------------------------------------------- | -------------- |
-| **XGBoost**       | Gradient-boosted regression predicting total points | `xgboost`      |
-| **Random Forest** | Baseline ensemble model for interpretability        | `randomForest` |
-
-The final predicted standings are derived by sorting teams by predicted total points.
-
-A Monte Carlo simulation (`R/03_simulation.R`) uses a Poisson-based attack/defense model to estimate probabilities of each finishing position.
-
----
+That's it! The script will:
+- Automatically install required packages (`randomForest`, `readr`)
+- Generate sample data
+- Train the model
+- Display predicted standings
+- Save results to `outputs/predicted_standings.csv`
 
 ## 📊 Example Output
 
-| Rank | Team            | Predicted Points | Top 4 Probability |
-| ---- | --------------- | ---------------- | ----------------- |
-| 1    | Manchester City | 85.3             | 0.94              |
-| 2    | Arsenal         | 80.7             | 0.88              |
-| 3    | Liverpool       | 76.5             | 0.75              |
-| 4    | Tottenham       | 71.1             | 0.60              |
-| ...  | ...             | ...              | ...               |
+The script displays a table like this:
 
-*(Example — real values depend on current season data.)*
+```
+ Pos              Team Pts  GD Top4% Rel%
+   1   Manchester City  89  45   75%   0%
+   2         Liverpool  85  38   85%   0%
+   3           Arsenal  82  32   88%   0%
+   4         Tottenham  75  18   75%   0%
+   ...
+  18    Nottingham F.  35 -22    0%  65%
+  19  Sheffield United  32 -28    0%  70%
+  20       Luton Town   28 -35    0%  80%
+```
 
----
+## 🛠️ How It Works
 
-## ⚽ Data Sources
+1. **Data Generation**: Creates 3 seasons of historical data with realistic team statistics
+2. **Feature Engineering**: Calculates metrics like win rate, attack/defense strength, goal difference
+3. **Model Training**: Uses Random Forest regression to learn patterns from historical performance
+4. **Prediction**: Applies the model to current season data to predict final points
+5. **Probability Calculation**: Estimates Top 4 and relegation probabilities based on predicted points
 
-* [football-data.co.uk](https://www.football-data.co.uk/) — historical Premier League match results
-* [Understat](https://understat.com/) — expected goals (xG) and match-level advanced stats
+## 📁 What's Included
 
-All data used is publicly available for non-commercial analytical use.
+```
+Premier-League-Standings-Predictor-R-/
+├── predict_standings.R    # Main script - does everything!
+├── outputs/               # Generated predictions saved here
+├── README.md             # This file
+└── LICENSE               # MIT License
+```
 
----
+## 🎨 Features
 
-## 🧭 Next Steps / Ideas
+- ✅ **Self-contained**: Everything in one script
+- ✅ **No external data required**: Generates sample data automatically  
+- ✅ **Auto-installs packages**: No manual setup needed
+- ✅ **Readable output**: Clear console display and CSV export
+- ✅ **Realistic predictions**: Based on actual Premier League team performance patterns
 
-* Integrate **Elo ratings** or **Glicko** as dynamic performance features
-* Add **player-level features** (xG/xA contributions, injuries, transfers)
-* Build a **Shiny dashboard** for live updating standings
-* Include a **time-series model** (rolling forecasts as season progresses)
+## 🔮 Future Enhancements
 
----
+ Want to make this even better? Consider:
+- Fetching real match data from APIs like football-data.co.uk
+- Adding expected goals (xG) statistics from Understat
+- Building a Shiny dashboard for interactive visualization
+- Implementing Monte Carlo simulations for probability estimation
+- Including player-level data and injury information
 
 ## 📜 License
 
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
-
----
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 👨‍💻 Author
 
-Ruhulalemeen Mulla
-Data Science & Sports Analytics Enthusiast
-📧 [ruhanmulla07@gmail.com](mailto:ruhanmulla07@gmail.com)
-🔗 [www.linkedin.com/in/ruhulalemeen-mulla](www.linkedin.com/in/ruhulalemeen-mulla) ·
+**Ruhulalemeen Mulla**  
+Data Science & Sports Analytics Enthusiast  
+📧 ruhanmulla07@gmail.com  
+🔗 [LinkedIn](https://www.linkedin.com/in/ruhulalemeen-mulla)
 
 ---
 
